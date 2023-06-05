@@ -16,17 +16,9 @@ init_percent = -1
 
 
 class CustomCIFAR100Dataset_train(Dataset):
-    #cifar100_dataset = None
-    #targets = None
 
-    #@classmethod
-    #def load_dataset(cls, root="./data/cifar100", train=True, download=True, transform=None):
-    #    cls.cifar100_dataset = datasets.CIFAR100(root, train=train, download=download, transform=transform)
-    #    cls.targets = cls.cifar100_dataset.targets
     
     def __init__(self, root="./data/cifar100", train=True, download=True, transform=None, invalidList=None):
-        #if CustomCIFAR100Dataset_train.cifar100_dataset is None:
-        #    raise RuntimeError("Dataset not loaded. Call load_dataset() before creating instances of this class.")
 
         self.cifar100_dataset = datasets.CIFAR100(root, train=train, download=download, transform=transform)
         self.targets = self.cifar100_dataset.targets
@@ -104,12 +96,41 @@ class CustomMNISTDataset_test(Dataset):
     def __len__(self):
         return len(CustomMNISTDataset_test.mnist_dataset)
 
+"""This code defines a class constructor that sets up data loaders for a machine learning task. The data loaders 
+handle loading of data from a dataset, applying transformations to the data, and batching the data for training or 
+testing a model.
+
+Here's a general overview of what the code does:
+
+1. **Data Transformation**: It first defines a series of transformations to be applied to the images in the dataset. 
+These transformations include converting the images to grayscale, converting them to PyTorch tensors, and normalizing 
+them.
+
+2. **Memory Management**: It sets a flag for whether to pin memory or not. Pinning memory can speed up data transfer 
+between CPU and GPU.
+
+3. **Data Indexing**: It checks if there's a list of invalid indices. If there is, it adds these indices to the list 
+of labeled indices. This could be used to exclude certain data points from the training process.
+
+4. **Dataset and DataLoader Setup**: It creates a custom MNIST dataset with the defined transformations and invalid 
+list. Depending on the flags `is_filter` and `is_mini`, it sets up different ways to split the data into labeled and 
+unlabeled sets. It then creates PyTorch DataLoaders for the training and testing datasets. The DataLoaders handle 
+batching of the data and shuffling.
+
+5. **Data Filtering**: It defines methods to filter the data based on the class labels. This could be used in a 
+scenario where you have known and unknown classes, and you want to separate the data accordingly.
+
+The code is designed to be flexible to different scenarios, such as whether to use a GPU, whether to filter the data, 
+and whether to use a smaller version of the dataset."""
 class MNIST(object):
     def __init__(self, batch_size, use_gpu, num_workers, is_filter, is_mini, unlabeled_ind_train=None,
                  labeled_ind_train=None, invalidList=None):
         transform = transforms.Compose([
+            # Convert the images to grayscale with 3 output channels
             transforms.Grayscale(num_output_channels=3),
+            # Convert the images to PyTorch tensors
             transforms.ToTensor(),
+            # Normalize the images with mean and standard deviation
             transforms.Normalize((0.1307,), (0.3081,))
         ])
 
@@ -119,7 +140,7 @@ class MNIST(object):
             labeled_ind_train = labeled_ind_train + invalidList
 
         trainset = CustomMNISTDataset_train(transform=transform, invalidList=invalidList)
-        ## 初始化
+
         if unlabeled_ind_train == None and labeled_ind_train == None:
             if is_mini:
                 labeled_ind_train, unlabeled_ind_train = self.filter_known_unknown_10percent(trainset)

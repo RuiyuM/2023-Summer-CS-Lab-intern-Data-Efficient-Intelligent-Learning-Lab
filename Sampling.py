@@ -21,18 +21,21 @@ def random_sampling(args, unlabeledloader, Len_labeled_ind_train, model, use_gpu
     labelArr = []
     precision, recall = 0, 0
     for batch_idx, (index, (_, labels)) in enumerate(unlabeledloader):
-        queryIndex += index
-        labelArr += list(np.array(labels.data))
+        # MISSING PART 1: Update the query index and label array
+        queryIndex += ""
+        labelArr += ""
 
-    tmp_data = np.vstack((queryIndex, labelArr)).T
-    np.random.shuffle(tmp_data)
-    tmp_data = tmp_data.T
-    queryIndex = tmp_data[0][:args.query_batch]
-    labelArr = tmp_data[1]
-    queryLabelArr = tmp_data[1][:args.query_batch]
-    precision = len(np.where(queryLabelArr < args.known_class)[0]) / len(queryLabelArr)
-    recall = (len(np.where(queryLabelArr < args.known_class)[0]) + Len_labeled_ind_train) / (
-            len(np.where(labelArr < args.known_class)[0]) + Len_labeled_ind_train)
+        # MISSING PART 2: Stack and shuffle the query index and label array
+    tmp_data = ""
+
+    # MISSING PART 3: Extract the query index and label array for the query batch
+    queryIndex = ""
+    labelArr = ""
+    queryLabelArr = ""
+
+    # MISSING PART 4: Compute the precision and recall
+    precision = ""
+    recall = ""
     return queryIndex[np.where(queryLabelArr < args.known_class)[0]], queryIndex[
         np.where(queryLabelArr >= args.known_class)[0]], precision, recall
 
@@ -80,24 +83,28 @@ def uncertainty_sampling(args, unlabeledloader, Len_labeled_ind_train, model, us
     for batch_idx, (index, (data, labels)) in enumerate(unlabeledloader):
         if use_gpu:
             data, labels = data.cuda(), labels.cuda()
-        if args.dataset == 'mnist':
-            data = data.repeat(1, 3, 1, 1)
-        features, outputs = model(data)
+        # MISSING PART 1: Get the features and outputs from the model
+        features, outputs = ""
 
+        # MISSING PART 2: Update the uncertainty array: equation for entropy
         uncertaintyArr += list(
             np.array((-torch.softmax(outputs, 1) * torch.log(torch.softmax(outputs, 1))).sum(1).cpu().data))
-        queryIndex += index
-        labelArr += list(np.array(labels.cpu().data))
 
-    tmp_data = np.vstack((uncertaintyArr, queryIndex, labelArr)).T
-    tmp_data = tmp_data[np.argsort(tmp_data[:, 0])]
-    tmp_data = tmp_data.T
-    queryIndex = tmp_data[1][-args.query_batch:].astype(int)
-    labelArr = tmp_data[2].astype(int)
-    queryLabelArr = tmp_data[2][-args.query_batch:]
-    precision = len(np.where(queryLabelArr < args.known_class)[0]) / len(queryLabelArr)
-    recall = (len(np.where(queryLabelArr < args.known_class)[0]) + Len_labeled_ind_train) / (
-            len(np.where(labelArr < args.known_class)[0]) + Len_labeled_ind_train)
+        # MISSING PART 3: Update the query index and label array
+        queryIndex += ""
+        labelArr += ""
+
+    # MISSING PART 4: Stack and sort the uncertainty array, query index, and label array
+    tmp_data = ""
+
+    # MISSING PART 5: Extract the query index and label array for the query batch
+    queryIndex = ""
+    labelArr = ""
+    queryLabelArr = ""
+
+    # MISSING PART 6: Compute the precision and recall
+    precision = ""
+    recall = ""
     return queryIndex[np.where(queryLabelArr < args.known_class)[0]], queryIndex[
         np.where(queryLabelArr >= args.known_class)[0]], precision, recall
 
@@ -301,8 +308,8 @@ def active_learning_5(args, query, index_knn, queryIndex, S_index, labeled_index
 
         # all the indices for neighbors
         neighbors, values = index_knn[queryIndex[i][0]]
-
-        predicted_prob = F.softmax(S_index[queryIndex[i][0]][-1], dim=-1).cuda()
+        # MISSING PART 1: the output of model which saved at S_index dictionary
+        predicted_prob = F.softmax(S_index[" "][-1], dim=-1).cuda()
 
         predicted_label = S_index[queryIndex[i][0]][-3]
 
@@ -324,8 +331,8 @@ def active_learning_5(args, query, index_knn, queryIndex, S_index, labeled_index
         # entropy = Categorical(probs = predicted_prob ).entropy().cpu().item()
 
         new_query_index.append(queryIndex[i] + [score_np])
-
-    new_query_index = sorted(new_query_index, key=lambda x: x[-1], reverse=True)
+    # MISSING PART2: Use Lambda to sort the below variable according to the score_np in decreasing order
+    new_query_index = sorted(" ")
 
     return new_query_index
 
@@ -454,6 +461,10 @@ def active_query(args, model, query, unlabeledloader, Len_labeled_ind_train, use
     #################################################################
     S_index = {}
 
+
+    # The upper part of the code simply processes the output from ResNet. It takes the maximum value from the data of
+    # length 21, and then combines this value with its index and label in the dataset to form a value in a
+    # dictionary, which is placed in S_ij.
     for batch_idx, (index, (data, labels)) in enumerate(unlabeledloader):
 
         if use_gpu:
@@ -480,7 +491,7 @@ def active_query(args, model, query, unlabeledloader, Len_labeled_ind_train, use
 
     #################################################################
 
-    # 上半部分的code就是把Resnet里面的输出做了一下简单的数据处理，把21长度的数据取最大值然后把这个值和其在数据集里面的index，label组成一个字典的value放到S——ij里面
+
 
     # queryIndex 存放known class的地方
     queryIndex = []
@@ -502,14 +513,15 @@ def active_query(args, model, query, unlabeledloader, Len_labeled_ind_train, use
         for k in range(len(index_Neighbor)):
 
             n_index = index_Neighbor[k]
-
+            # MISSING PART 1: if the n_index can be found at labeled array add count_known by 1
             if n_index in set(labeled_ind_train):
-                count_known += 1
-
+                " "
+            # MISSING PART 2: if the n_index can be found at labeled array add count_unknown by 1
             elif n_index in set(invalidList):
-                count_unknown += 1
-
-        if count_unknown < count_known:
+                " "
+        # MISSING PART 3: Decide whether to add the current IMAGE to the query index based on the counts of known and
+        # unknown neighbors
+        if " ":
 
             queryIndex.append([current_index, count_known, true_label])
 

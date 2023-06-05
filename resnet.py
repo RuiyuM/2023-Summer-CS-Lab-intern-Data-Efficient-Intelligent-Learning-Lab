@@ -24,11 +24,16 @@ class BasicBlock(nn.Module):
 
         # residual function
         self.residual_function = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels * BasicBlock.expansion, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(out_channels * BasicBlock.expansion)
+            # MISSING PART 1: Add a 2D convolution layer
+            "",
+            # MISSING PART 2: Add a batch normalization layer
+            "",
+            # MISSING PART 3: Add a ReLU activation function
+            "",
+            # MISSING PART 4: Add another 2D convolution layer
+            "",
+            # MISSING PART 5: Add another batch normalization layer
+            ""
         )
 
         # shortcut
@@ -95,9 +100,6 @@ class ResNet(nn.Module):
         self.conv5_x = self._make_layer(block, 512, num_block[3], 2)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
 
-        # self.fc1 = nn.Linear(512 * block.expansion, 2)
-        # self.fc2 = nn.Linear(2, num_classes)
-
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
     def _make_layer(self, block, out_channels, num_blocks, stride):
@@ -124,14 +126,24 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        output = self.conv1(x)
-        output = self.conv2_x(output)
-        output = self.conv3_x(output)
-        output = self.conv4_x(output)
-        output = self.conv5_x(output)
+        # MISSING PART 2: Apply the first convolutional layer
+        "output = "
 
-        output = self.avg_pool(output)
-        features_for_TSNE = torch.flatten(output, 1)
+        # MISSING PART 3: Apply the second convolutional layer
+        "output = "
+
+        # MISSING PART 4: Apply the third convolutional layer
+        "output = "
+
+        # MISSING PART 5: Apply the fourth convolutional layer
+        "output = "
+
+        # MISSING PART 6: Apply the fifth convolutional layer
+        "output = "
+
+        # MISSING PART 7: Apply the average pooling layer
+        "output = "
+
 
         feature = output.view(output.size(0), -1)
 

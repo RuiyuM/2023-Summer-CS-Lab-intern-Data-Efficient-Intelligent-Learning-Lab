@@ -24,6 +24,40 @@ from utils import AverageMeter, Logger
 
 from extract_features import CIFAR100_LOAD_ALL
 
+# Create a new ArgumentParser object. ArgumentParser objects hold all the information necessary to parse the command
+# line arguments. The description argument gives a brief description of what the program does and it is displayed
+# when the -h or --help command line option is given.
+"""
+parser = argparse.ArgumentParser(description='This is a description of what this program does')
+"""
+
+# Add arguments to the parser. Each argument is defined by a name (or names), the type of the argument,
+# a default value, and a help message. The 'choices' parameter restricts the argument's value to be one of the
+# provided choices.
+
+# The add_argument method is used to specify which command-line options the program is expecting. In the simplest
+# form, the add_argument method takes a single argument, a string which specifies the name of the command-line
+# option. The type of the argument can also be specified. If not provided, str is the default type. The default value
+# of the argument can also be specified. The help message is displayed when the -h or --help command line option is
+# given.
+"""
+parser.add_argument('--argname', type=int, default=0, help='This is a description of what this argument does')
+"""
+
+# The parse_args method is called to convert the args at the command line into an object with attributes. If the
+# command-line arguments do not match the types and/or constraints defined in the add_argument calls, parse_args will
+# raise an error.
+"""
+args = parser.parse_args()
+"""
+
+# The values of the arguments can then be accessed through the args object. For example, if an argument named
+# 'argname' was added to the parser, its value can be accessed with 'args.argname'.
+"""
+print(args.argname)
+"""
+
+
 parser = argparse.ArgumentParser("NEAT")
 # dataset
 parser.add_argument('-d', '--dataset', type=str, default='mnist', choices=['Tiny-Imagenet', 'cifar100', 'cifar10', 'mnist'])
@@ -96,9 +130,24 @@ def main():
     print("Creating dataset: {}".format(args.dataset))
 
     dataset = datasets.create(
-        name=args.dataset, known_class_=args.known_class, init_percent_=args.init_percent,
-        batch_size=args.batch_size, use_gpu=use_gpu,
-        num_workers=args.workers, is_filter=args.is_filter, is_mini=args.is_mini, SEED=args.seed,
+        # MISSING PART 1: Provide the name of the dataset
+        name="",
+        # MISSING PART 2: Provide the known class
+        known_class_="",
+        # MISSING PART 3: Provide the initial percentage
+        init_percent_="",
+        # MISSING PART 4: Provide the batch size
+        batch_size="",
+        # MISSING PART 5: Specify whether to use GPU
+        use_gpu="",
+        # MISSING PART 6: Provide the number of workers
+        num_workers="",
+        # MISSING PART 7: Specify whether to filter the dataset
+        is_filter="",
+        # MISSING PART 8: Specify whether to use a mini version of the dataset
+        is_mini="",
+        # MISSING PART 9: Provide the seed for random number generation
+        SEED="",
     )
 
     testloader, unlabeledloader = dataset.testloader, dataset.unlabeledloader
@@ -113,18 +162,6 @@ def main():
     per_round.append(list(labeled_ind_train))
 
     print("Creating model: {}".format(args.model))
-    # model = models.create(name=args.model, num_classes=dataset.num_classes)
-    #
-    # if use_gpu:
-    #     model = nn.DataParallel(model).cuda()
-    #
-    # criterion_xent = nn.CrossEntropyLoss()
-    # criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
-    # optimizer_model = torch.optim.SGD(model.parameters(), lr=args.lr_model, weight_decay=5e-04, momentum=0.9)
-    # optimizer_centloss = torch.optim.SGD(criterion_cent.parameters(), lr=args.lr_cent)
-    #
-    # if args.stepsize > 0:
-    #     scheduler = lr_scheduler.StepLR(optimizer_model, step_size=args.stepsize, gamma=args.gamma)
 
     start_time = time.time()
 
@@ -159,15 +196,14 @@ def main():
                 model_B = nn.DataParallel(model_B).cuda()
 
             criterion_xent = nn.CrossEntropyLoss()
-            # criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
 
-            # optimizer_model_A = torch.optim.SGD(model_A.parameters(), lr=args.lr_model, weight_decay=5e-04, momentum=0.9)
+
             optimizer_model_B = torch.optim.SGD(model_B.parameters(), lr=args.lr_model, weight_decay=5e-04, momentum=0.9)
 
-            # optimizer_centloss = torch.optim.SGD(criterion_cent.parameters(), lr=args.lr_cent)
+
 
             if args.stepsize > 0:
-                # scheduler_A = lr_scheduler.StepLR(optimizer_model_A, step_size=args.stepsize, gamma=args.gamma)
+
                 scheduler_B = lr_scheduler.StepLR(optimizer_model_B, step_size=args.stepsize, gamma=args.gamma)
         else:
             if args.model == "cnn":
@@ -192,8 +228,7 @@ def main():
                 model_B = nn.DataParallel(model_B).cuda()
 
             criterion_xent = nn.CrossEntropyLoss()
-            # criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
-            # criterion_cent_special = CenterLoss(num_classes=dataset.num_classes + 1, feat_dim=2, use_gpu=use_gpu)
+
             optimizer_model_A = torch.optim.SGD(model_A.parameters(), lr=args.lr_model, weight_decay=5e-04,
                                                 momentum=0.9)
             optimizer_model_B = torch.optim.SGD(model_B.parameters(), lr=args.lr_model, weight_decay=5e-04,
@@ -254,14 +289,9 @@ def main():
         queryIndex = []
 
         if args.query_strategy == "random":
-            queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.random_sampling(args, unlabeledloader,
-                                                                                                 len(labeled_ind_train),
-                                                                                                 model_A, use_gpu)
+            queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.random_sampling("", "", "", "", "")
         elif args.query_strategy == "uncertainty":
-            queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.uncertainty_sampling(args,
-                                                                                                      unlabeledloader,
-                                                                                                      len(labeled_ind_train),
-                                                                                                      model_A, use_gpu)
+            queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.uncertainty_sampling("", "", "", "", "", "")
 
         elif args.query_strategy == "AV_temperature":
             queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.AV_sampling_temperature(args,
@@ -315,17 +345,7 @@ def main():
 
 
         elif args.query_strategy == "NEAT":
-            queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.active_query(args, model_B, query,
-                                                                                              unlabeledloader,
-                                                                                              len(labeled_ind_train),
-
-                                                                                              use_gpu,
-                                                                                              labeled_ind_train,
-                                                                                              invalidList,
-                                                                                              unlabeled_ind_train,
-                                                                                              ordered_feature,
-                                                                                              ordered_label,
-                                                                                              index_to_label)
+            queryIndex, invalidIndex, Precision[query], Recall[query] = Sampling.active_query("", "", "", "", "", "", "", "", "", "", "", "")
 
 
         elif args.query_strategy in ["hybrid-BGADL", "hybrid-OpenMax", "hybrid-Core_set", "hybrid-BADGE_sampling", "hybrid-uncertainty"]:
@@ -454,63 +474,94 @@ def train_A(model, criterion_xent,
 
         losses.update(loss.item(), labels.size(0))
         xent_losses.update(loss_xent.item(), labels.size(0))
-        # cent_losses.update(loss_cent.item(), labels.size(0))
 
 
 
 
-def train_B(model, criterion_xent,
-            optimizer_model,
-            trainloader, use_gpu, num_classes, epoch):
+
+def train_B(model, criterion_xent, optimizer_model, trainloader, use_gpu, num_classes, epoch):
+    # Set the model to training mode
     model.train()
+
+    # Initialize the average meter for total loss and cross entropy loss
     xent_losses = AverageMeter()
     losses = AverageMeter()
 
-
+    # Iterate over the training data
     for batch_idx, (index, (data, labels)) in enumerate(trainloader):
+        # If GPU is available, move the data and labels to GPU
         if use_gpu:
             data, labels = data.cuda(), labels.cuda()
-        features, outputs = model(data)
-        loss_xent = criterion_xent(outputs, labels)
-        # loss_cent = criterion_cent(features, labels)
+
+        # MISSING PART 1: Get the features and outputs from the model
+        ""
+
+        # MISSING PART 2: Compute the cross entropy loss
+        ""
+
+        # Initialize the center loss
         loss_cent = 0.0
 
-        # loss_cent *= args.weight_cent
+        # Compute the total loss
         loss = loss_xent + loss_cent
-        optimizer_model.zero_grad()
-        loss.backward()
-        optimizer_model.step()
-        # by doing so, weight_cent would not impact on the learning of centers
-        # if args.weight_cent > 0.0:
-        #     for param in criterion_cent.parameters():
-        #         param.grad.data *= (1. / args.weight_cent)
-        #     optimizer_centloss.step()
 
+        # MISSING PART 3: Zero the gradients of the optimizer
+        ""
+
+        # MISSING PART 4: Backpropagate the loss
+        ""
+
+        # MISSING PART 5: Perform a step of the optimizer
+        ""
+
+        # Update the losses
         losses.update(loss.item(), labels.size(0))
         xent_losses.update(loss_xent.item(), labels.size(0))
-        # cent_losses.update(loss_cent.item(), labels.size(0))
+
+
 
 
 
 
 def test(model, testloader, use_gpu, num_classes, epoch):
+    # Set the model to evaluation mode. This is necessary as some layers like
+    # dropout and batch normalization behave differently during training and evaluation.
     model.eval()
+
+    # Initialize counters for correct predictions and total number of data points
     correct, total = 0, 0
 
+    # torch.no_grad() impacts the autograd engine and deactivates it. It reduces memory usage and
+    # speeds up computation but you won’t be able to backprop (which you don’t want in an eval script).
     with torch.no_grad():
+        # Loop over each batch of data in the test loader
         for index, (data, labels) in testloader:
+            # If GPU is available, move the data and labels to GPU
             if use_gpu:
                 data, labels = data.cuda(), labels.cuda()
-            features, outputs = model(data)
-            predictions = outputs.data.max(1)[1]
+
+            # Forward pass: compute the output of the network given the input data
+            # MISSING PART 1: Call the model with the input data and get the features and outputs
+            "features, outputs = "
+
+            # Get the class with the highest probability from the output
+            # MISSING PART 2: Use the outputs to get the predicted class labels
+            "predictions = "
+
+            # Update the total number of data points
             total += labels.size(0)
-            correct += (predictions == labels.data).sum()
 
+            # Update the number of correct predictions
+            # MISSING PART 3: Compare the predicted labels with the true labels and update the 'correct' counter
+            "correct += "
 
-
-
+    # Compute the accuracy of the model
     acc = correct * 100. / total
+
+    # Compute the error rate of the model
     err = 100. - acc
+
+    # Return the accuracy and error rate
     return acc, err
 
 
