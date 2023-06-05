@@ -20,7 +20,7 @@ import models
 import torchvision.models as torch_models
 import pickle
 from utils import AverageMeter, Logger
-from center_loss import CenterLoss
+# from center_loss import CenterLoss
 
 from extract_features import CIFAR100_LOAD_ALL
 
@@ -159,12 +159,12 @@ def main():
                 model_B = nn.DataParallel(model_B).cuda()
 
             criterion_xent = nn.CrossEntropyLoss()
-            criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
+            # criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
 
             # optimizer_model_A = torch.optim.SGD(model_A.parameters(), lr=args.lr_model, weight_decay=5e-04, momentum=0.9)
             optimizer_model_B = torch.optim.SGD(model_B.parameters(), lr=args.lr_model, weight_decay=5e-04, momentum=0.9)
 
-            optimizer_centloss = torch.optim.SGD(criterion_cent.parameters(), lr=args.lr_cent)
+            # optimizer_centloss = torch.optim.SGD(criterion_cent.parameters(), lr=args.lr_cent)
 
             if args.stepsize > 0:
                 # scheduler_A = lr_scheduler.StepLR(optimizer_model_A, step_size=args.stepsize, gamma=args.gamma)
@@ -192,13 +192,13 @@ def main():
                 model_B = nn.DataParallel(model_B).cuda()
 
             criterion_xent = nn.CrossEntropyLoss()
-            criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
-            criterion_cent_special = CenterLoss(num_classes=dataset.num_classes + 1, feat_dim=2, use_gpu=use_gpu)
+            # criterion_cent = CenterLoss(num_classes=dataset.num_classes, feat_dim=2, use_gpu=use_gpu)
+            # criterion_cent_special = CenterLoss(num_classes=dataset.num_classes + 1, feat_dim=2, use_gpu=use_gpu)
             optimizer_model_A = torch.optim.SGD(model_A.parameters(), lr=args.lr_model, weight_decay=5e-04,
                                                 momentum=0.9)
             optimizer_model_B = torch.optim.SGD(model_B.parameters(), lr=args.lr_model, weight_decay=5e-04,
                                                 momentum=0.9)
-            optimizer_centloss = torch.optim.SGD(criterion_cent.parameters(), lr=args.lr_cent)
+            # optimizer_centloss = torch.optim.SGD(criterion_cent.parameters(), lr=args.lr_cent)
 
             if args.stepsize > 0:
                 scheduler_A = lr_scheduler.StepLR(optimizer_model_A, step_size=args.stepsize, gamma=args.gamma)
@@ -210,8 +210,8 @@ def main():
                                        'hybrid-Core_set',
                                        'hybrid-BADGE_sampling', 'hybrid-uncertainty']:
                 # Train model B for classifying known classes
-                train_B(model_B, criterion_xent, criterion_cent,
-                        optimizer_model_B, optimizer_centloss,
+                train_B(model_B, criterion_xent,
+                        optimizer_model_B,
                         trainloader_B, use_gpu, dataset.num_classes, epoch)
 
                 if args.stepsize > 0:
@@ -226,12 +226,12 @@ def main():
                     print("Model_B | Accuracy (%): {}\t Error rate (%): {}".format(acc_B, err_B))
 
             else:
-                train_A(model_A, criterion_xent, criterion_cent,
-                        optimizer_model_A, optimizer_centloss,
+                train_A(model_A, criterion_xent,
+                        optimizer_model_A,
                         trainloader_A, invalidList, use_gpu, dataset.num_classes, epoch)
                 # Train model B for classifying known classes
-                train_B(model_B, criterion_xent, criterion_cent,
-                        optimizer_model_B, optimizer_centloss,
+                train_B(model_B, criterion_xent,
+                        optimizer_model_B,
                         trainloader_B, use_gpu, dataset.num_classes, epoch)
 
                 if args.stepsize > 0:
@@ -429,8 +429,8 @@ def calculate_precision_recall():
     return precision, recall
 
 
-def train_A(model, criterion_xent, criterion_cent,
-            optimizer_model, optimizer_centloss,
+def train_A(model, criterion_xent,
+            optimizer_model,
             trainloader, invalidList, use_gpu, num_classes, epoch):
     model.train()
     xent_losses = AverageMeter()
@@ -444,19 +444,13 @@ def train_A(model, criterion_xent, criterion_cent,
 
         features, outputs = model(data)
         loss_xent = criterion_xent(outputs, labels)
-        # loss_cent = criterion_cent(features, labels)
+
         loss_cent = 0.0
-        # loss_cent *= args.weight_cent
+
         loss = loss_xent + loss_cent
         optimizer_model.zero_grad()
-        optimizer_centloss.zero_grad()
         loss.backward()
         optimizer_model.step()
-        # by doing so, weight_cent would not impact on the learning of centers
-        # if args.weight_cent > 0.0:
-        #     for param in criterion_cent.parameters():
-        #         param.grad.data *= (1. / args.weight_cent)
-        #     optimizer_centloss.step()
 
         losses.update(loss.item(), labels.size(0))
         xent_losses.update(loss_xent.item(), labels.size(0))
@@ -465,8 +459,8 @@ def train_A(model, criterion_xent, criterion_cent,
 
 
 
-def train_B(model, criterion_xent, criterion_cent,
-            optimizer_model, optimizer_centloss,
+def train_B(model, criterion_xent,
+            optimizer_model,
             trainloader, use_gpu, num_classes, epoch):
     model.train()
     xent_losses = AverageMeter()
@@ -484,7 +478,6 @@ def train_B(model, criterion_xent, criterion_cent,
         # loss_cent *= args.weight_cent
         loss = loss_xent + loss_cent
         optimizer_model.zero_grad()
-        optimizer_centloss.zero_grad()
         loss.backward()
         optimizer_model.step()
         # by doing so, weight_cent would not impact on the learning of centers
