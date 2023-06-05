@@ -47,6 +47,26 @@ def set_model_min(pre_type):
         return model, None
 
 
+class CustomMNISTDataset_train(Dataset):
+    mnist_dataset = None
+    targets = None
+
+    @classmethod
+    def load_dataset(cls, root="./data/mnist", train=True, download=True, transform=None):
+        cls.mnist_dataset = datasets.MNIST(root, train=train, download=download, transform=transform)
+        cls.targets = cls.mnist_dataset.targets
+
+    def __init__(self):
+        if CustomMNISTDataset_train.mnist_dataset is None:
+            raise RuntimeError("Dataset not loaded. Call load_dataset() before creating instances of this class.")
+
+    def __getitem__(self, index):
+        data_point, label = CustomMNISTDataset_train.mnist_dataset[index]
+        return index, (data_point, label)
+
+    def __len__(self):
+        return len(CustomMNISTDataset_train.mnist_dataset)
+
 class CustomCIFAR10Dataset_train(Dataset):
     cifar100_dataset = None
     targets = None
@@ -149,10 +169,16 @@ def CIFAR100_EXTRACT_ALL(pre_type, dataset, model, preprocess):
         CustomCIFAR10Dataset_train.load_dataset(transform=preprocess_rand)
         train_data = CustomCIFAR10Dataset_train()
 
-    else:
+    elif dataset == "cifar100":
 
         CustomCIFAR100Dataset_train.load_dataset(transform=preprocess_rand)
         train_data = CustomCIFAR100Dataset_train()
+
+    elif dataset == "mnist":
+
+        CustomMNISTDataset_train.load_dataset(transform=preprocess_rand)
+        train_data = CustomMNISTDataset_train()
+
 
     batch_size = 256
     print('Data Loader')
@@ -215,11 +241,17 @@ def CIFAR100_EXTRACT_ALL(pre_type, dataset, model, preprocess):
         torch.save(ordered_label, save_folder + '/cifar10_labels.pt')
         torch.save(index_to_label, save_folder + '/cifar10_index_to_label.pt')
 
-    else:
+    elif dataset == "cifar100":
 
         torch.save(ordered_feature, save_folder + '/cifar100_features.pt')
         torch.save(ordered_label, save_folder + '/cifar100_labels.pt')
         torch.save(index_to_label, save_folder + '/cifar100_index_to_label.pt')
+
+    elif dataset == "mnist":
+
+        torch.save(ordered_feature, save_folder + '/mnist_features.pt')
+        torch.save(ordered_label, save_folder + '/mnist_labels.pt')
+        torch.save(index_to_label, save_folder + '/mnist_index_to_label.pt')
 
 
 def ImageNet_EXTRACT_ALL(pre_type, model, preprocess):
@@ -337,6 +369,12 @@ def CIFAR100_LOAD_ALL(dataset="cifar100", pre_type="clip"):
         ordered_feature = torch.load(save_folder + '/cifar100_features.pt')
         ordered_label = torch.load(save_folder + '/cifar100_labels.pt')
 
+    elif dataset == "mnist":
+
+        index_to_label = torch.load(save_folder + '/mnist_index_to_label.pt')
+        ordered_feature = torch.load(save_folder + '/mnist_features.pt')
+        ordered_label = torch.load(save_folder + '/mnist_labels.pt')
+
     print("finish loading " + dataset)
 
     new_dict = {}
@@ -393,7 +431,8 @@ def CIFAR100_EXTRACT_FEATURE_CLIP_new(labeled_index, unlabeled_index, args, orde
 
 
 if __name__ == "__main__":
-    for dataset in ["cifar10", "cifar100", "Tiny-Imagenet"]:
+    # for dataset in ["cifar10", "cifar100", "Tiny-Imagenet", "mnist"]:
+    for dataset in ["mnist"]:
         print(dataset)
         extracted_feature("CLIP", dataset)
     # CIFAR100_EXTRACT_ALL(dataset=dataset)

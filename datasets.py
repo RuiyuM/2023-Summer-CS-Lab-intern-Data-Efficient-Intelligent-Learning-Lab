@@ -63,17 +63,62 @@ class CustomCIFAR100Dataset_test(Dataset):
     def __len__(self):
         return len(CustomCIFAR100Dataset_test.cifar100_dataset)
 
+
+class CustomMNISTDataset_train(Dataset):
+
+    def __init__(self, root="./data/mnist", train=True, download=True, transform=None, invalidList=None):
+
+        self.mnist_dataset = datasets.MNIST(root, train=train, download=download, transform=transform)
+        self.targets = self.mnist_dataset.targets
+
+        if invalidList is not None:
+            targets = np.array(self.mnist_dataset.targets)
+            targets[targets >= known_class] = known_class
+            self.mnist_dataset.targets = targets.tolist()
+
+    def __getitem__(self, index):
+        data_point, label = self.mnist_dataset[index]
+        return index, (data_point, label)
+
+    def __len__(self):
+        return len(self.mnist_dataset)
+
+
+class CustomMNISTDataset_test(Dataset):
+    mnist_dataset = None
+    targets = None
+
+    @classmethod
+    def load_dataset(cls, root="./data/mnist", train=False, download=True, transform=None):
+        cls.mnist_dataset = datasets.MNIST(root, train=train, download=download, transform=transform)
+        cls.targets = cls.mnist_dataset.targets
+
+    def __init__(self):
+        if CustomMNISTDataset_test.mnist_dataset is None:
+            raise RuntimeError("Dataset not loaded. Call load_dataset() before creating instances of this class.")
+
+    def __getitem__(self, index):
+        data_point, label = CustomMNISTDataset_test.mnist_dataset[index]
+        return index, (data_point, label)
+
+    def __len__(self):
+        return len(CustomMNISTDataset_test.mnist_dataset)
+
 class MNIST(object):
     def __init__(self, batch_size, use_gpu, num_workers, is_filter, is_mini, unlabeled_ind_train=None,
-                 labeled_ind_train=None):
+                 labeled_ind_train=None, invalidList=None):
         transform = transforms.Compose([
+            transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,))
         ])
 
         pin_memory = True if use_gpu else False
 
-        trainset = torchvision.datasets.MNIST(root='./data/mnist', train=True, download=True, transform=transform)
+        if invalidList is not None:
+            labeled_ind_train = labeled_ind_train + invalidList
+
+        trainset = CustomMNISTDataset_train(transform=transform, invalidList=invalidList)
         ## 初始化
         if unlabeled_ind_train == None and labeled_ind_train == None:
             if is_mini:
@@ -103,7 +148,8 @@ class MNIST(object):
                 num_workers=num_workers, pin_memory=pin_memory,
             )
 
-        testset = torchvision.datasets.MNIST(root='./data/mnist', train=False, download=True, transform=transform)
+        CustomCIFAR100Dataset_test.load_dataset(transform=transform)
+        testset = CustomCIFAR100Dataset_test()
         filter_ind_test = self.filter_known_unknown(testset)
         self.filter_ind_test = filter_ind_test
 
@@ -608,6 +654,7 @@ __factory = {
     'Tiny-Imagenet': TinyImageNet,
     'cifar100': CIFAR100,
     'cifar10': CIFAR10,
+    'mnist': MNIST
 }
 
 

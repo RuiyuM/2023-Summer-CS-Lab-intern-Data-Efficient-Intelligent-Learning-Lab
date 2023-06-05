@@ -26,9 +26,9 @@ from extract_features import CIFAR100_LOAD_ALL
 
 parser = argparse.ArgumentParser("NEAT")
 # dataset
-parser.add_argument('-d', '--dataset', type=str, default='cifar100', choices=['Tiny-Imagenet', 'cifar100', 'cifar10'])
-parser.add_argument('-j', '--workers', default=4, type=int,
-                    help="number of data loading workers (default: 4)")
+parser.add_argument('-d', '--dataset', type=str, default='mnist', choices=['Tiny-Imagenet', 'cifar100', 'cifar10', 'mnist'])
+parser.add_argument('-j', '--workers', default=0, type=int,
+                    help="number of data loading workers (default: 0)")
 # optimization
 parser.add_argument('--batch-size', type=int, default=128)
 parser.add_argument('--lr-model', type=float, default=0.01, help="learning rate for model")
@@ -56,7 +56,7 @@ parser.add_argument('--save-dir', type=str, default='log')
 parser.add_argument('--is-filter', type=bool, default=True)
 parser.add_argument('--is-mini', type=bool, default=True)
 parser.add_argument('--known-class', type=int, default=20)
-parser.add_argument('--init-percent', type=int, default=16)
+parser.add_argument('--init-percent', type=int, default=1)
 
 # active learning
 
@@ -439,14 +439,6 @@ def train_A(model, criterion_xent, criterion_cent,
 
     invalid_class = args.known_class
     for batch_idx, (index, (data, labels)) in enumerate(trainloader):
-        '''
-        for i in range(len(labels)):
-            # Annotate "unknown"
-            if index[i] in invalidList:
-                labels[i] = invalid_class
-                T[i] = unknown_T
-        '''
-
         if use_gpu:
             data, labels = data.cuda(), labels.cuda()
 
@@ -530,16 +522,6 @@ def test(model, testloader, use_gpu, num_classes, epoch):
 
 
 
-# class CustomCIFAR100Dataset(Dataset):
-#     def __init__(self, root='./data/', train=True, download=True, transform=None):
-#         self.cifar100_dataset = datasets.CIFAR100(root, train=train, download=download, transform=transform)
-#
-#     def __getitem__(self, index):
-#         data_point, label = self.cifar100_dataset[index]
-#         return index, (data_point, label)
-#
-#     def __len__(self):
-#         return len(self.cifar100_dataset)
 
 if __name__ == '__main__':
     main()
